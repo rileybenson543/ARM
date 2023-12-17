@@ -1,7 +1,4 @@
 import unittest
-
-import pandas as pd
-
 from ARM import Core, ItemsetGenerator, ARMData
 
 data_list = [
@@ -107,7 +104,8 @@ class RuleTests(unittest.TestCase):
 
     def test_get_possible_items_case1(self):
         possible_items = Core.get_possible_items(data)
-        self.assertEqual({'a', 'b', 'c', 'e', 'f'}, possible_items)
+        self.assertEqual({frozenset('a'), frozenset('b'), frozenset('c'),
+                          frozenset('e'), frozenset('f')}, possible_items)
 
     def test_get_possible_items_case2(self):
         data1 = ARMData.ARMData()  # empty data

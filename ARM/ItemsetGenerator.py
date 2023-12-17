@@ -13,12 +13,13 @@ import logging
 def generate_itemsets(data, min_support, quantity_framework=True):
     layers = []
     layer = Core.prune_itemsets(Core.get_possible_items(data), data, min_support, quantity_framework)
-    while Core.generate_next_layer_combinations(layer) != set():
-        next_layer = Core.generate_next_layer_combinations(layer)
-        logging.debug("Next layer candidates: " + str(next_layer))
-        layer = Core.prune_itemsets(next_layer, data, min_support, quantity_framework)
+    layer = Core.generate_next_layer_combinations(layer)
+    while layer != set():
+        logging.debug("Next layer candidates: " + str(layer))
+        layer = Core.prune_itemsets(layer, data, min_support, quantity_framework)
         logging.debug("Pruned layer: " + str(layer))
         layers.append(layer)
+        layer = Core.generate_next_layer_combinations(layer)
 
     all_layers = []
     for layer in layers:
@@ -30,6 +31,10 @@ def generate_itemsets(data, min_support, quantity_framework=True):
         columns = ['itemset', 'database_support']
     else:
         columns = ['itemset', 'transaction_support']
+
+    print(Core.tif_hit)
+    print(Core.tif_miss)
+
 
     return pd.DataFrame(all_layers, columns=columns) \
         .sort_values(columns[1], ascending=False)

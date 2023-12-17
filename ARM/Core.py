@@ -6,6 +6,13 @@
 """
 
 from ARM.ARMData import *
+transaction_support_cache = dict()
+database_support_cache = dict()
+
+tif_visited = dict()
+
+tif_hit = 0
+tif_miss = 0
 
 
 def transaction_itemset_status(itemset, transaction: Transaction):
@@ -19,19 +26,17 @@ def transaction_itemset_status(itemset, transaction: Transaction):
 
 
 def transaction_itemset_frequency(itemset: set, transaction: Transaction):
-    found = []
+    to_find = set(itemset)
     min = 0
     for item in transaction.items:
         if item.item in itemset:
-            found.append(item.item)
+            to_find.remove(item.item)
             if item.quantity < min or min == 0:
                 min = item.quantity
 
-    for item in itemset:
-        if item not in found:
-            return 0
-
-    return min
+    if len(to_find) == 0:
+        return min
+    return 0
 
 
 def transaction_frequency(itemset, data: ARMData):
@@ -49,11 +54,23 @@ def database_frequency(itemset, data: ARMData):
 
 
 def transaction_support(itemset, data: ARMData):
-    return transaction_frequency(itemset, data) / len(data)
+    f_itemset = frozenset(itemset)
+    if f_itemset not in transaction_support_cache.keys():
+        ts = transaction_frequency(itemset, data) / len(data)
+        transaction_support_cache[f_itemset] = ts
+        return ts
+    else:
+        return transaction_support_cache[f_itemset]
 
 
 def database_support(itemset, data: ARMData):
-    return database_frequency(itemset, data) / len(data)
+    f_itemset = frozenset(itemset)
+    if f_itemset not in database_support_cache.keys():
+        ds = database_frequency(itemset, data) / len(data)
+        database_support_cache[f_itemset] = ds
+        return ds
+    else:
+        return database_support_cache[f_itemset]
 
 
 def transaction_confidence(antecedent: set, consequent: set, data):
@@ -68,7 +85,7 @@ def get_possible_items(data: ARMData):
     items = set()
     for transaction in data.transactions:
         for item in transaction.items:
-            items.add(item.item)
+            items.add(frozenset([item.item]))
     return items
 
 

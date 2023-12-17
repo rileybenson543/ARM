@@ -36,6 +36,10 @@ class ARMData:
     def __init__(self):
         self.transactions = []
         self.num_transactions = 0
+
+    def from_transactions(self, data: list[Transaction]):
+        self.transactions = data
+        self.num_transactions = len(data)
         pass
 
     def from_dataframe(self, dataframe: pd.DataFrame):
