@@ -23,9 +23,11 @@ class TransactionItem:
 class Transaction:
 
     items: list[TransactionItem]
+    itemset: frozenset
 
     def __init__(self, items: list[TransactionItem]):
         self.items = items
+        self.itemset = frozenset([x.item for x in items])
 
 
 class ARMData:

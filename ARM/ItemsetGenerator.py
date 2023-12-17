@@ -16,6 +16,7 @@ def generate_itemsets(data, min_support, quantity_framework=True):
     layer = Core.generate_next_layer_combinations(layer)
     while layer != set():
         logging.debug("Next layer candidates: " + str(layer))
+        logging.info("Pruning layer")
         layer = Core.prune_itemsets(layer, data, min_support, quantity_framework)
         logging.debug("Pruned layer: " + str(layer))
         layers.append(layer)
@@ -31,10 +32,6 @@ def generate_itemsets(data, min_support, quantity_framework=True):
         columns = ['itemset', 'database_support']
     else:
         columns = ['itemset', 'transaction_support']
-
-    print(Core.tif_hit)
-    print(Core.tif_miss)
-
 
     return pd.DataFrame(all_layers, columns=columns) \
         .sort_values(columns[1], ascending=False)

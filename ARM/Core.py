@@ -9,32 +9,22 @@ from ARM.ARMData import *
 transaction_support_cache = dict()
 database_support_cache = dict()
 
-tif_visited = dict()
 
-tif_hit = 0
-tif_miss = 0
-
-
-def transaction_itemset_status(itemset, transaction: Transaction):
-    to_find = set(itemset)
-    for item in transaction.items:
-        if item.item in itemset:
-            to_find.remove(item.item)
-    if len(to_find) == 0:
+def transaction_itemset_status(itemset: set, transaction: Transaction):
+    itemset = set(itemset)
+    if itemset.issubset(transaction.itemset):
         return 1
     return 0
 
 
 def transaction_itemset_frequency(itemset: set, transaction: Transaction):
-    to_find = set(itemset)
-    min = 0
-    for item in transaction.items:
-        if item.item in itemset:
-            to_find.remove(item.item)
-            if item.quantity < min or min == 0:
-                min = item.quantity
-
-    if len(to_find) == 0:
+    itemset = set(itemset)
+    if itemset.issubset(transaction.itemset):
+        min = 0
+        for item in transaction.items:
+            if item.item in itemset:
+                if item.quantity < min or min == 0:
+                    min = item.quantity
         return min
     return 0
 
