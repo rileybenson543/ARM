@@ -12,11 +12,15 @@ import logging
 
 def generate_itemsets(data, min_support, quantity_framework=True):
     layers = []
-    layer = Core.prune_itemsets(Core.get_possible_items(data), data, min_support, quantity_framework)
+    layer_num = 1
+    layer = Core.get_possible_items(data)
+    logging.info(f"Pruning layer {layer_num} with {len(layer)} itemsets")
+    layer = Core.prune_itemsets(layer, data, min_support, quantity_framework)
     layer = Core.generate_next_layer_combinations(layer)
     while layer != set():
+        layer_num += 1
         logging.debug("Next layer candidates: " + str(layer))
-        logging.info("Pruning layer")
+        logging.info(f"Pruning layer {layer_num} with {len(layer)} itemsets")
         layer = Core.prune_itemsets(layer, data, min_support, quantity_framework)
         logging.debug("Pruned layer: " + str(layer))
         layers.append(layer)

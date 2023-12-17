@@ -150,6 +150,22 @@ class RuleTests(unittest.TestCase):
                           frozenset({'a', 'c'}), frozenset({'d', 'e'}), frozenset({'c', 'd'}),
                           frozenset({'a', 'e'})}, next_layer)
 
+class ItemsetGeneratorTests(unittest.TestCase):
+
+    def test_generate_itemsets_case1(self):
+        itemsets = ItemsetGenerator.generate_itemsets(data, 0.2, False)
+        first_itemset = itemsets.iloc[0]['itemset']
+        first_itemset_support = itemsets.iloc[0]['transaction_support']
+        self.assertEqual(frozenset({'a', 'b'}), first_itemset)
+        self.assertEqual(0.8, first_itemset_support)
+
+    def test_generate_itemsets_case2(self):
+        itemsets = ItemsetGenerator.generate_itemsets(data, 0.2, True)
+        first_itemset = itemsets.iloc[0]['itemset']
+        first_itemset_support = itemsets.iloc[0]['database_support']
+        self.assertEqual(frozenset({'a', 'b'}), first_itemset)
+        self.assertEqual(0.8, first_itemset_support)
+
 
 if __name__ == '__main__':
     unittest.main()
