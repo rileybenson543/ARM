@@ -4,6 +4,7 @@
     Riley Basile-Benson
     12/15/2023
 """
+import itertools
 
 from ARM.ARMData import *
 transaction_support_cache = dict()
@@ -66,7 +67,16 @@ def transaction_confidence(antecedent: set, consequent: set, data):
 
 
 def database_confidence(antecedent: set, consequent: set, data):
+    if antecedent == set():
+        return 0
     return database_support(antecedent.union(consequent), data) / database_support(antecedent, data)
+
+
+def lift(antecedent: set, consequent: set, data: ARMData, quantity_framework=True):
+    if quantity_framework:
+        return database_confidence(antecedent, consequent, data) / database_support(consequent, data)
+    else:
+        return transaction_confidence(antecedent, consequent, data) / transaction_support(consequent, data)
 
 
 def get_possible_items(data: ARMData):
@@ -89,15 +99,34 @@ def prune_itemsets(itemsets: set, data: ARMData, min_support, quantity_framework
         if support >= min_support:
             pruned_itemsets.add(itemset)
     if len(pruned_itemsets) == len(itemsets):
-        logging.warning("No itemsets were pruned. Consider increasing support")
+        logging.info("No itemsets were pruned. Consider increasing support")
     return pruned_itemsets
 
+def prune_rules(rules: list[tuple[set, set]], data: ARMData, min_confidence, quantity_framework=True):
+    if quantity_framework:
+        pruned_rules = [x for x in rules if database_confidence(x[0], x[1], data) >= min_confidence]
+    else:
+        pruned_rules = [x for x in rules if transaction_confidence(x[0], x[1], data) >= min_confidence]
 
-def generate_next_layer_combinations(itemsets: set):
-    itemsets_list = list(itemsets)
+    if len(pruned_rules) == len(pruned_rules):
+        logging.info("No rules were pruned. Consider increasing confidence")
+    return pruned_rules
+
+
+
+def generate_next_layer_itemset_combinations(itemsets: set):
     combinations = set()
-    length = len(itemsets_list)
-    for idx in range(length-1):
-        for next in range(idx+1, length):
-            combinations.add(frozenset(set(itemsets_list[idx]).union(set(itemsets_list[next]))))
+    for i, j in itertools.combinations(list(itemsets), 2):
+        combinations.add(frozenset(set(i).union(set(j))))
     return combinations
+
+def generate_next_layer_rules_combinations(rules: list[tuple[set, set]]):
+    rules_list = []
+    for rule in rules:
+        antecedent = list(rule[0])
+        if len(antecedent) == 0:
+            continue
+        consequent = list(rule[1])
+        consequent.append(antecedent[-1])
+        rules_list.append((set(antecedent[:-1]), set(consequent)))
+    return rules_list

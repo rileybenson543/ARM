@@ -1,5 +1,5 @@
 import unittest
-from ARM import Core, ItemsetGenerator, ARMData
+from ARM import Core, ItemsetsGenerator, ARMData, RulesGenerator
 
 data_list = [
         [('a', 1), ('b', 1)],
@@ -134,33 +134,48 @@ class RuleTests(unittest.TestCase):
 
     def test_generate_next_layer_combinations_case1(self):
         itemsets = {'a', 'b', 'c'}
-        next_layer = Core.generate_next_layer_combinations(itemsets)
+        next_layer = Core.generate_next_layer_itemset_combinations(itemsets)
         self.assertEqual({frozenset({'a', 'c'}), frozenset({'b', 'c'}), frozenset({'a', 'b'})}, next_layer)
 
     def test_generate_next_layer_combinations_case2(self):
         itemsets = {'a'}
-        next_layer = Core.generate_next_layer_combinations(itemsets)
+        next_layer = Core.generate_next_layer_itemset_combinations(itemsets)
         self.assertEqual(set(), next_layer)
 
     def test_generate_next_layer_combinations_case3(self):
         itemsets = {'a', 'b', 'c', 'd', 'e'}
-        next_layer = Core.generate_next_layer_combinations(itemsets)
+        next_layer = Core.generate_next_layer_itemset_combinations(itemsets)
         self.assertEqual({frozenset({'b', 'e'}), frozenset({'b', 'd'}), frozenset({'a', 'd'}),
                           frozenset({'c', 'e'}), frozenset({'a', 'b'}), frozenset({'b', 'c'}),
                           frozenset({'a', 'c'}), frozenset({'d', 'e'}), frozenset({'c', 'd'}),
                           frozenset({'a', 'e'})}, next_layer)
 
+    def test_lift_case1(self):
+        rule = ({'a'}, {'b'})
+        lift = Core.lift(rule[0], rule[1], data, False)
+        self.assertEqual(1.25, round(lift,2))
+
+    def test_lift_case2(self):
+        rule = ({'a'}, set())
+        lift = Core.lift(rule[0], rule[1], data, False)
+        self.assertEqual(1, lift)
+
+    def test_lift_case3(self):
+        rule = (set(), {'a'})
+        lift = Core.lift(rule[0], rule[1], data, False)
+        self.assertEqual(1, lift)
+
 class ItemsetGeneratorTests(unittest.TestCase):
 
     def test_generate_itemsets_case1(self):
-        itemsets = ItemsetGenerator.generate_itemsets(data, 0.2, False)
+        itemsets = ItemsetsGenerator.generate_itemsets(data, 0.2, False)
         first_itemset = itemsets.iloc[0]['itemset']
         first_itemset_support = itemsets.iloc[0]['transaction_support']
         self.assertEqual(frozenset({'a', 'b'}), first_itemset)
-        self.assertEqual(0.8, first_itemset_support)
+        self.assertEqual(0.6, first_itemset_support)
 
     def test_generate_itemsets_case2(self):
-        itemsets = ItemsetGenerator.generate_itemsets(data, 0.2, True)
+        itemsets = ItemsetsGenerator.generate_itemsets(data, 0.2, True)
         first_itemset = itemsets.iloc[0]['itemset']
         first_itemset_support = itemsets.iloc[0]['database_support']
         self.assertEqual(frozenset({'a', 'b'}), first_itemset)

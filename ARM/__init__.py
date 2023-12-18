@@ -1,3 +1,3 @@
-from ARM import ItemsetGenerator, ARMData
+from ARM import ItemsetsGenerator, RulesGenerator, ARMData
 
-__all__ = ['ItemsetGenerator', 'ARMData']
+__all__ = ['ItemsetsGenerator', 'RulesGenerator', 'ARMData']
