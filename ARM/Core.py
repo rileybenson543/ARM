@@ -6,15 +6,21 @@
 """
 import itertools
 
+import numpy as np
+import time
+
 from ARM.ARMData import *
 transaction_support_cache = dict()
 database_support_cache = dict()
-
+start = 0
+end = 0
+times = []
 
 def transaction_itemset_status(itemset: set, transaction: Transaction):
     if transaction.itemset.issuperset(itemset):
         return 1
     return 0
+
 
 
 def transaction_itemset_frequency(itemset: set, transaction: Transaction):
@@ -45,11 +51,17 @@ def database_frequency(itemset, data: ARMData):
 def transaction_support(itemset, data: ARMData):
     f_itemset = frozenset(itemset)
     if f_itemset not in transaction_support_cache:
-        ts = transaction_frequency(itemset, data) / len(data)
-        transaction_support_cache[f_itemset] = ts
-        return ts
+        t = np.zeros(len(data.columns.keys()))
+        for item in itemset:
+            t[data.columns[item]] = 1
+        mul = np.matmul(data.matrix, t.T)
+        sc = np.count_nonzero(mul == np.sum(t), axis=0)
+        sup = sc / len(data)
+        transaction_support_cache[f_itemset] = sup
+        return sup
     else:
         return transaction_support_cache[f_itemset]
+
 
 
 def database_support(itemset, data: ARMData):
@@ -88,7 +100,8 @@ def get_possible_items(data: ARMData):
 
 
 def prune_itemsets(itemsets: set, data: ARMData, min_support, quantity_framework=True):
-    pruned_itemsets = set()
+    frequent_itemsets = set()
+    infrequent_itemsets = set()
     for itemset in itemsets:
         support = 0
         if quantity_framework:
@@ -97,10 +110,12 @@ def prune_itemsets(itemsets: set, data: ARMData, min_support, quantity_framework
             support = transaction_support(itemset, data)
 
         if support >= min_support:
-            pruned_itemsets.add(itemset)
-    if len(pruned_itemsets) == len(itemsets):
+            frequent_itemsets.add(itemset)
+        else:
+            infrequent_itemsets.add(itemset)
+    if len(frequent_itemsets) == len(itemsets):
         logging.info("No itemsets were pruned. Consider increasing support")
-    return pruned_itemsets
+    return frequent_itemsets, infrequent_itemsets
 
 def prune_rules(rules: list[tuple[set, set]], data: ARMData, min_confidence, quantity_framework=True):
     if quantity_framework:
@@ -114,11 +129,15 @@ def prune_rules(rules: list[tuple[set, set]], data: ARMData, min_confidence, qua
 
 
 
-def generate_next_layer_itemset_combinations(itemsets: set):
-    combinations = set()
-    for i, j in itertools.combinations(list(itemsets), 2):
-        combinations.add(frozenset(set(i).union(set(j))))
-    return combinations
+def generate_next_layer_itemset_combinations(items: set, num_items_in_combination: int, infrequent_itemsets: set):
+    next_itemsets = set()
+    for comb in itertools.combinations(list([x for x in items if x not in infrequent_itemsets]), num_items_in_combination):
+        new_itemset = set()
+        for item in comb:
+            new_itemset = new_itemset.union(item)
+        next_itemsets.add(frozenset(new_itemset))
+    return next_itemsets
+
 
 def generate_next_layer_rules_combinations(rules: list[tuple[set, set]]):
     rules_list = []

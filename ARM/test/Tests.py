@@ -115,36 +115,36 @@ class RuleTests(unittest.TestCase):
     def test_prune_itemsets_case1_no_quantity(self):
         min_support = 0.5
         pruned = Core.prune_itemsets({'a', 'b', 'c', 'e', 'f'}, data, min_support, quantity_framework=False)
-        self.assertEqual({'a', 'b'}, pruned)
+        self.assertEqual(({'a', 'b'}, {'c', 'e', 'f'}), pruned)
 
     def test_prune_itemsets_case2_with_quantity(self):
         min_support = 0.5
         pruned = Core.prune_itemsets({'a', 'b', 'c', 'e', 'f'}, data, min_support, quantity_framework=True)
-        self.assertEqual({'a', 'b', 'c'}, pruned)
+        self.assertEqual(({'a', 'b', 'c'}, {'e', 'f'}), pruned)
 
     def test_prune_itemset_case3_no_quantity(self):
         min_support = 0.0
         pruned = Core.prune_itemsets({'a', 'b', 'c', 'e', 'f'}, data, min_support, quantity_framework=False)
-        self.assertEqual({'a', 'b', 'c', 'e', 'f'}, pruned)
+        self.assertEqual(({'a', 'b', 'c', 'e', 'f'}, set()), pruned)
 
     def test_prune_itemset_case4_with_quantity(self):
         min_support = 0.0
         pruned = Core.prune_itemsets({'a', 'b', 'c', 'e', 'f'}, data, min_support, quantity_framework=True)
-        self.assertEqual({'a', 'b', 'c', 'e', 'f'}, pruned)
+        self.assertEqual(({'a', 'b', 'c', 'e', 'f'}, set()), pruned)
 
-    def test_generate_next_layer_combinations_case1(self):
-        itemsets = {'a', 'b', 'c'}
-        next_layer = Core.generate_next_layer_itemset_combinations(itemsets)
+    def test_generate_next_layer_itemsets_combinations_case1(self):
+        itemsets = {frozenset({'a'}), frozenset({'b'}), frozenset({'c'})}
+        next_layer = Core.generate_next_layer_itemset_combinations(itemsets, 2, set())
         self.assertEqual({frozenset({'a', 'c'}), frozenset({'b', 'c'}), frozenset({'a', 'b'})}, next_layer)
 
-    def test_generate_next_layer_combinations_case2(self):
+    def test_generate_next_layer_itemsets_combinations_case2(self):
         itemsets = {'a'}
-        next_layer = Core.generate_next_layer_itemset_combinations(itemsets)
+        next_layer = Core.generate_next_layer_itemset_combinations(itemsets, 2, set())
         self.assertEqual(set(), next_layer)
 
-    def test_generate_next_layer_combinations_case3(self):
+    def test_generate_next_layer_itemsets_combinations_case3(self):
         itemsets = {'a', 'b', 'c', 'd', 'e'}
-        next_layer = Core.generate_next_layer_itemset_combinations(itemsets)
+        next_layer = Core.generate_next_layer_itemset_combinations(itemsets, 2, set())
         self.assertEqual({frozenset({'b', 'e'}), frozenset({'b', 'd'}), frozenset({'a', 'd'}),
                           frozenset({'c', 'e'}), frozenset({'a', 'b'}), frozenset({'b', 'c'}),
                           frozenset({'a', 'c'}), frozenset({'d', 'e'}), frozenset({'c', 'd'}),

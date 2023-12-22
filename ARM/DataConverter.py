@@ -11,6 +11,7 @@ import numbers
 
 import pandas as pd
 from ARM import ARMData
+from ARM.ARMData import Transaction
 
 
 def convert_from_one_hot_encode(dataframe: pd.DataFrame) -> ARMData:

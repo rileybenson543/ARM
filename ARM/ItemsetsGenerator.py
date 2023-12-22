@@ -13,18 +13,21 @@ import logging
 def generate_itemsets(data, min_support, quantity_framework=True):
     layers = []
     layer_num = 1
-    layer = Core.get_possible_items(data)
-    logging.info(f"Pruning layer {layer_num} with {len(layer)} itemsets")
-    layer = Core.prune_itemsets(layer, data, min_support, quantity_framework)
-    layer = Core.generate_next_layer_itemset_combinations(layer)
+    possible_items = Core.get_possible_items(data)
+    logging.info(f"Staring with with {len(possible_items)} itemsets at layer {layer_num}")
+    layer, infrequent_itemsets = Core.prune_itemsets(possible_items, data, min_support, quantity_framework)
+    layer = Core.generate_next_layer_itemset_combinations(possible_items, layer_num + 1, infrequent_itemsets)
+    logging.info(f"Generated {len(layer)} candidate itemsets")
     while len(layer) > 0:
         layer_num += 1
         logging.debug("Next layer candidates: " + str(layer))
-        logging.info(f"Pruning layer {layer_num} with {len(layer)} itemsets")
-        layer = Core.prune_itemsets(layer, data, min_support, quantity_framework)
+        layer, infrequent = Core.prune_itemsets(layer, data, min_support, quantity_framework)
+        logging.info(f"Pruned {len(infrequent)} itemsets")
+        infrequent_itemsets.union(infrequent)
         logging.debug("Pruned layer: " + str(layer))
         layers.append(layer)
-        layer = Core.generate_next_layer_itemset_combinations(layer)
+        layer = Core.generate_next_layer_itemset_combinations(possible_items, layer_num + 1, infrequent_itemsets)
+        logging.info(f"Generated {len(layer)} candidate itemsets")
 
     all_layers = []
     for layer in layers:
